@@ -17,6 +17,7 @@ typedef struct {
 } miniomp_taskqueue_t;
 
 extern miniomp_taskqueue_t miniomp_taskqueue;
+
 #define MAXELEMENTS_TQ 128
 
 void task_destroy(miniomp_task_t * t);
@@ -24,7 +25,6 @@ void task_execute(miniomp_task_t * t);
 void wait_no_running_tasks();
 void try_execute_task();
 
-// funtions to implement basic management operations on taskqueue
 bool is_empty(miniomp_taskqueue_t *task_queue);
 bool is_full(miniomp_taskqueue_t *task_queue);
 bool enqueue(miniomp_taskqueue_t *task_queue, miniomp_task_t *task_descriptor); 

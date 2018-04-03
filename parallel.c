@@ -47,7 +47,6 @@ void * worker(void * args) {
 void GOMP_parallel (void (*fn) (void *), void *data, unsigned num_threads, unsigned int flags) {
     if(!num_threads) num_threads = miniomp_icv.nthreads_var;
     if(num_threads > MAX_THREADS) num_threads = MAX_THREADS;
-    //printf("Starting a parallel region using %d threads\n", num_threads);
     pthread_barrier_init(&miniomp_barrier, NULL, num_threads); 
     // Reset control variables
     miniomp_current_threads = num_threads;
