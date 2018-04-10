@@ -15,9 +15,7 @@ pthread_key_t miniomp_specifickey;
 unsigned int miniomp_current_threads;
 unsigned int miniomp_threads_arrived;
 
-// This is the prototype for the Pthreads starting function
 void * worker(void * args) {
-    // insert all necessary code here for:
     pthread_setspecific(miniomp_specifickey, args);
     miniomp_parallel_t * data = (miniomp_parallel_t *) args;
     
@@ -39,8 +37,6 @@ void * worker(void * args) {
         }
     }
     
-    pthread_exit(NULL);
-    
     return (NULL);
 }
 
@@ -53,15 +49,20 @@ void GOMP_parallel (void (*fn) (void *), void *data, unsigned num_threads, unsig
     miniomp_threads_arrived = 0;
     
     // Thread creation.    
-    for(int i = 0; i < num_threads; ++i) {
+    for(int i = 0; i < num_threads - 1; ++i) {
         miniomp_parallel[i].fn = fn;
         miniomp_parallel[i].fn_data = data;
         miniomp_parallel[i].id = i;
         
         pthread_create(&(miniomp_threads[i]), NULL, &worker, &(miniomp_parallel[i]));
     }
+
+    miniomp_parallel[num_threads -1].fn = fn;
+    miniomp_parallel[num_threads -1].fn_data = data;
+    miniomp_parallel[num_threads -1].id = num_threads - 1;
+    worker(&(miniomp_parallel[num_threads - 1]));
     
-    for(int i = 0; i < num_threads; ++i)
+    for(int i = 0; i < num_threads - 1; ++i)
         pthread_join(miniomp_threads[i], NULL);
 
     pthread_barrier_destroy(&miniomp_barrier);
