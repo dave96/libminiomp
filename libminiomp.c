@@ -13,6 +13,7 @@ void init_miniomp(void) {
     
     // Initialize Pthread data structures and thread-specific data
     pthread_key_create(&miniomp_specifickey, NULL);
+    pthread_setspecific(miniomp_specifickey, (void *) (intptr_t) (int) 0);
     miniomp_threads = malloc(sizeof(pthread_t) * MAX_THREADS);
     miniomp_parallel = malloc(sizeof(miniomp_parallel_t) * MAX_THREADS);
     

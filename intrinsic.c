@@ -11,7 +11,7 @@ int omp_get_num_threads (void) {
 }
 
 int omp_get_thread_num (void) {
-    miniomp_parallel_t * data = 
-        (miniomp_parallel_t *) pthread_getspecific(miniomp_specifickey);
-  return(data->id);
+    int data = 
+        (int) (intptr_t) pthread_getspecific(miniomp_specifickey);
+  return(data);
 }

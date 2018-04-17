@@ -16,8 +16,8 @@ unsigned int miniomp_current_threads;
 unsigned int miniomp_threads_arrived;
 
 void * worker(void * args) {
-    pthread_setspecific(miniomp_specifickey, args);
     miniomp_parallel_t * data = (miniomp_parallel_t *) args;
+    pthread_setspecific(miniomp_specifickey, (void *) (intptr_t) data->id);
     
     if (data->id == 0) {
         // Parallel_single: only thread 0 executes function.
