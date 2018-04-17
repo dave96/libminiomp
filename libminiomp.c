@@ -22,6 +22,13 @@ void init_miniomp(void) {
     
     // Initialize OpenMP workdescriptors for loop and single and taskqueue
     init_task_queue(&miniomp_taskqueue, MAXELEMENTS_TQ);
+
+    // Initialize counters
+    
+    in_taskgroup = false;
+    taskgroup_count_in_execution = 0;
+    tasks_in_execution = 0;
+    __sync_synchronize();
 }
 
 void fini_miniomp(void) {

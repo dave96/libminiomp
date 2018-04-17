@@ -3,6 +3,8 @@
 miniomp_taskqueue_t miniomp_taskqueue;
 
 unsigned int tasks_in_execution;
+unsigned int taskgroup_count_in_execution;
+bool in_taskgroup; 
 
 // Initializes the task queue
 void init_task_queue(miniomp_taskqueue_t * queue, int max_elements) {
@@ -79,10 +81,17 @@ void wait_no_running_tasks() {
     while(tasks_in_execution > 0) __sync_synchronize();
 }
 
+void wait_no_running_tasks_group() {
+    while(!is_empty(&miniomp_taskqueue)) try_execute_task();
+    while(taskgroup_count_in_execution > 0) __sync_synchronize();
+}
+
 void task_execute(miniomp_task_t * t) {
     __sync_synchronize(); // Commit all memory operations
     t->fn(t->data);
     __sync_fetch_and_sub(&tasks_in_execution, 1);
+    if(t->in_taskgroup)
+        __sync_fetch_and_sub(&taskgroup_count_in_execution, 1);
     __sync_synchronize(); // Commit all memory operations
 }
 
@@ -114,19 +123,26 @@ void GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
     
     task->fn = fn;
     
-    task->buf = (void *) (task + 1);
+    void * buf = (void *) (task + 1);
 
     if (__builtin_expect (cpyfn != NULL, 0))
         {
-          task->data = (char *) (((uintptr_t) task->buf + arg_align - 1)
+          task->data = (char *) (((uintptr_t) buf + arg_align - 1)
                                 & ~(uintptr_t) (arg_align - 1));
           cpyfn (task->data, data);
         }
     else
 	{
-          task->data = task->buf;
-          memcpy (task->buf, data, arg_size);
+          task->data = buf;
+          memcpy (buf, data, arg_size);
 	}
+
+    if(in_taskgroup) {
+        task->in_taskgroup = true;
+        __sync_fetch_and_add(&taskgroup_count_in_execution, 1);
+    } else {
+        task->in_taskgroup = false;
+    }
 
     while(!enqueue(&miniomp_taskqueue, task)) try_execute_task();
 }

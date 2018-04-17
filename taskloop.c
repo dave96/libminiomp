@@ -22,6 +22,8 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
     long total_count = end - start;
 
     it_number = total_count/step;
+    
+    GOMP_taskgroup_start();
 
     long tasknum = 0;
     if (flags & GOMP_TASK_FLAG_GRAINSIZE) {
@@ -50,22 +52,25 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
             taskEnd = start + it_step;
         }
 
-        task->buf = (void *) (task + 1);
+        void * buf = (void *) (task + 1);
 
         if (__builtin_expect (cpyfn != NULL, 0)) {
-            task->data = (char *) (((uintptr_t) task->buf + arg_align - 1)
+            task->data = (char *) (((uintptr_t) buf + arg_align - 1)
                     & ~(uintptr_t) (arg_align - 1));
             cpyfn (task->data, data);
         } else {
-            task->data = task->buf;
-            memcpy (task->buf, data, arg_size);
+            task->data = buf;
+            memcpy (buf, data, arg_size);
         }
         ((long *)task->data)[0] = start;
         ((long *)task->data)[1] = taskEnd;
+        task->in_taskgroup = true;
+
+        __sync_fetch_and_add(&taskgroup_count_in_execution, 1);
 
         start += it_step;
         while(!enqueue(&miniomp_taskqueue, task)) try_execute_task();
     }
 
-    wait_no_running_tasks(); // Taskwait implicit.
+    GOMP_taskgroup_end();
 }

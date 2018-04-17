@@ -11,11 +11,12 @@ GOMP_taskwait (void)
 void
 GOMP_taskgroup_start (void)
 {
-    // Nothing to do
+   in_taskgroup = true; 
 }
 
 void
 GOMP_taskgroup_end (void)
 {
-    GOMP_taskwait();
+    in_taskgroup = false;
+    wait_no_running_tasks_group();
 }

@@ -23,3 +23,4 @@ extern pthread_mutex_t miniomp_default_lock;
 #include "loop.h"
 #include "single.h"
 #include "task.h"
+#include "tasksync.h"

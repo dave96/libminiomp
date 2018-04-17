@@ -4,7 +4,7 @@
 typedef struct {
     void (*fn)(void *);
     void (*data);
-    void * buf;
+    bool in_taskgroup;
 } miniomp_task_t;
 
 typedef struct {
@@ -18,11 +18,16 @@ typedef struct {
 
 extern miniomp_taskqueue_t miniomp_taskqueue;
 
+extern bool in_taskgroup;
+extern unsigned int taskgroup_count_in_execution;
+extern unsigned int tasks_in_execution;
+
 #define MAXELEMENTS_TQ 128
 
 void task_destroy(miniomp_task_t * t);
 void task_execute(miniomp_task_t * t);
 void wait_no_running_tasks();
+void wait_no_running_tasks_group();
 void try_execute_task();
 
 bool is_empty(miniomp_taskqueue_t *task_queue);
