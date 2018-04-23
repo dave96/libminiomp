@@ -8,3 +8,5 @@ int omp_get_num_threads (void);
 
 // Returns the identifier of the invoking thread within the team
 int omp_get_thread_num (void);
+
+int omp_get_level(void);

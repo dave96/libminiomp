@@ -10,6 +10,10 @@ int omp_get_num_threads (void) {
     return(miniomp_current_threads);
 }
 
+int omp_get_level (void) {
+    return(1);
+}
+
 int omp_get_thread_num (void) {
     int data = 
         (int) (intptr_t) pthread_getspecific(miniomp_specifickey);
